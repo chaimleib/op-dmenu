@@ -11,18 +11,18 @@ function usage() {
 
 function config() {
   local f="$HOME"/.config/op-menu/env.json
-  mkdir -p "`dirname "$f"`" || return 1
-  chmod 0700 "`dirname "$f"`" || return 1
+  mkdir -p "$(dirname "$f")" || return 1
+  chmod 0700 "$(dirname "$f")" || return 1
   touch "$f" || return 1
   chmod 0600 "$f" || return 1
 
-  if ! OPMENU_MENU=${OPMENU_MENU:-`jq -sre '.[0].menu | if isempty(.) then null else . end' "$f"`}; then
+  if ! OPMENU_MENU=${OPMENU_MENU:-$(jq -sre '.[0].menu | if isempty(.) then null else . end' "$f")}; then
     if ! command -v dmenu &>/dev/null; then
       echo "$0: could not find dmenu" >&2
       return 1
     fi
     OPMENU_MENU='dmenu -i -p %q:'
-    if cfg=`jq -s --arg val "$OPMENU_MENU" '.[0] | .menu = ($val)' "$f"`; then
+    if cfg=$(jq -s --arg val "$OPMENU_MENU" '.[0] | .menu = ($val)' "$f"); then
       echo "$cfg" > "$f"
     else
       echo "$0: unable to save OPMENU_MENU as .menu in $f" >&2
@@ -30,13 +30,13 @@ function config() {
     fi
   fi
   
-  if ! OPMENU_ADDR=${OPMENU_ADDR:-`jq -sre '.[0].addr | if isempty(.) then null else . end' "$f"`}; then
-    cmd=`printf "$OPMENU_MENU" "Addr (e.g. my)"`
-    if ! OPMENU_ADDR=`printf "%s\n" my Cancel | eval "$cmd"` || [ "$OPMENU_ADDR" = Cancel ]; then
+  if ! OPMENU_ADDR=${OPMENU_ADDR:-$(jq -sre '.[0].addr | if isempty(.) then null else . end' "$f")}; then
+    cmd=$(printf "$OPMENU_MENU" "Addr (e.g. my)")
+    if ! OPMENU_ADDR=$(printf "%s\n" my Cancel | eval "$cmd") || [ "$OPMENU_ADDR" = Cancel ]; then
       echo "$0: canceled config" >&2
       return 1
     fi
-    if cfg=`jq -s --arg val "$OPMENU_ADDR" '.[0] | .addr = ($val)' "$f"`; then
+    if cfg=$(jq -s --arg val "$OPMENU_ADDR" '.[0] | .addr = ($val)' "$f"); then
       echo "$cfg" > "$f"
     else
       echo "$0: unable to save OPMENU_ADDR as .addr in $f" >&2
