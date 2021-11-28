@@ -43,6 +43,21 @@ function config() {
       return 1
     fi
   fi
+
+  if ! OPMENU_ACCT=${OPMENU_ACCT:-$(jq -sre '.[0].acct | if isempty(.) then null else . end' "$f")}; then
+    cmd=$(printf "$OPMENU_MENU" "Account (email)")
+    if ! OPMENU_ACCT=$(printf "%s\n" Cancel | eval "$cmd") || [ "$OPMENU_ACCT" = Cancel ]; then
+      echo "$0: canceled config" >&2
+      return 1
+    fi
+    if cfg=$(jq -s --arg val "$OPMENU_ACCT" '.[0] | .acct = ($val)' "$f"); then
+      echo "$cfg" > "$f"
+    else
+      echo "$0: unable to save OPMENU_ACCT as .acct in $f" >&2
+      return 1
+    fi
+  fi
+
   cat "$f"
 }
 
